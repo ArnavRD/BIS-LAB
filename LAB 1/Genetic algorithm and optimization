@@ -1,0 +1,46 @@
+import random
+
+def fitness(x):
+    return x ** 2
+
+def decode(chromosome):
+    return int(chromosome, 2)
+
+def random_chromosome(length):
+    return ''.join(random.choice('01') for _ in range(length))
+
+def selection(population):
+    return sorted(population, key=lambda c: fitness(decode(c)), reverse=True)[:2]
+
+def crossover(parent1, parent2):
+    point = random.randint(1, len(parent1) - 1)
+    child1 = parent1[:point] + parent2[point:]
+    child2 = parent2[:point] + parent1[point:]
+    return child1, child2
+
+def mutate(chromosome, mutation_rate=0.1):
+    chromosome = list(chromosome)
+    for i in range(len(chromosome)):
+        if random.random() < mutation_rate:
+            chromosome[i] = '1' if chromosome[i] == '0' else '0'
+    return ''.join(chromosome)
+
+def genetic_algorithm(pop_size=6, chromosome_length=5, generations=10):
+    population = [random_chromosome(chromosome_length) for _ in range(pop_size)]
+
+    for gen in range(generations):
+        parents = selection(population)
+        offspring = []
+        while len(offspring) < pop_size:
+            p1, p2 = random.choice(parents), random.choice(parents)
+            child1, child2 = crossover(p1, p2)
+            child1, child2 = mutate(child1), mutate(child2)
+            offspring.extend([child1, child2])
+        population = selection(population + offspring)
+        best = max(population, key=lambda c: fitness(decode(c)))
+        print(f"Generation {gen+1}: Best = {best}, x = {decode(best)}, f(x) = {fitness(decode(best))}")
+
+    print("\nOptimal solution found:")
+    print(f"x = {decode(best)}, f(x) = {fitness(decode(best))}")
+
+genetic_algorithm()
