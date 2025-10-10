@@ -1,0 +1,59 @@
+import random
+import math
+
+def target_func(x):
+    return x**2 + 2*x + 1
+
+functions = ['+', '-', '*']
+terminals = ['x', '1', '2', '3']
+
+def random_expr(length=5):
+    symbols = functions + terminals
+    return [random.choice(symbols) for _ in range(length)]
+
+def evaluate(expr, x):
+    s = ''.join(expr).replace('x', str(x))
+    try:
+        return eval(s)
+    except:
+        return float('inf')
+
+def fitness(expr):
+    xs = range(-5, 6)
+    errors = [(evaluate(expr, x) - target_func(x))**2 for x in xs]
+    return -sum(errors) / len(errors)
+
+def mutate(expr, mutation_rate=0.3):
+    symbols = functions + terminals
+    new_expr = expr[:]
+    for i in range(len(expr)):
+        if random.random() < mutation_rate:
+            new_expr[i] = random.choice(symbols)
+    return new_expr
+
+def crossover(p1, p2):
+    point = random.randint(1, len(p1) - 2)
+    c1 = p1[:point] + p2[point:]
+    c2 = p2[:point] + p1[point:]
+    return c1, c2
+
+def gene_expression_algorithm(pop_size=20, generations=30, expr_length=7):
+    population = [random_expr(expr_length) for _ in range(pop_size)]
+
+    for gen in range(generations):
+        scored = [(fitness(expr), expr) for expr in population]
+        scored.sort(reverse=True)
+        best = scored[0]
+        print(f"Gen {gen+1}: Best = {''.join(best[1])}, Fitness = {best[0]:.4f}")
+        parents = [expr for _, expr in scored[:pop_size // 2]]
+        new_pop = []
+        while len(new_pop) < pop_size:
+            p1, p2 = random.sample(parents, 2)
+            c1, c2 = crossover(p1, p2)
+            c1, c2 = mutate(c1), mutate(c2)
+            new_pop.extend([c1, c2])
+        population = new_pop
+
+    print("\nBest Expression Found:", ''.join(best[1]))
+
+gene_expression_algorithm()
