@@ -1,0 +1,47 @@
+import random
+
+def fitness(position):
+    x, y = position
+    return x**2 + y**2
+
+def particle_swarm_optimization(num_particles=10, max_iter=20, w=0.5, c1=1.5, c2=1.5):
+    particles = []
+    velocities = []
+    pbest_positions = []
+    pbest_values = []
+    
+    for _ in range(num_particles):
+        pos = [random.uniform(-10, 10), random.uniform(-10, 10)]
+        vel = [random.uniform(-1, 1), random.uniform(-1, 1)]
+        particles.append(pos)
+        velocities.append(vel)
+        pbest_positions.append(pos[:])
+        pbest_values.append(fitness(pos))
+    
+    gbest_position = pbest_positions[pbest_values.index(min(pbest_values))][:]
+    gbest_value = min(pbest_values)
+
+    for t in range(max_iter):
+        for i in range(num_particles):
+            r1, r2 = random.random(), random.random()
+            for d in range(2):
+                velocities[i][d] = (w * velocities[i][d] +
+                                    c1 * r1 * (pbest_positions[i][d] - particles[i][d]) +
+                                    c2 * r2 * (gbest_position[d] - particles[i][d]))
+                particles[i][d] += velocities[i][d]
+
+            value = fitness(particles[i])
+            if value < pbest_values[i]:
+                pbest_values[i] = value
+                pbest_positions[i] = particles[i][:]
+
+        gbest_index = pbest_values.index(min(pbest_values))
+        gbest_position = pbest_positions[gbest_index][:]
+        gbest_value = min(pbest_values)
+
+        print(f"Iteration {t+1}: Best = {gbest_position}, f(x,y) = {gbest_value:.4f}")
+
+    print("\n Optimal solution found:")
+    print(f"x = {gbest_position[0]:.4f}, y = {gbest_position[1]:.4f}, f(x,y) = {gbest_value:.4f}")
+
+particle_swarm_optimization()
